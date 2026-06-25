@@ -26,38 +26,98 @@ const CARD_BASE =
   'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative'
 
 export function PlatformFeatures() {
-  const reveal       = useScrollReveal()
-  const sectionRef   = useRef<HTMLElement>(null)
-  const cardRefs     = useRef<(HTMLDivElement | null)[]>([])
+  const reveal     = useScrollReveal()
+  const sectionRef = useRef<HTMLElement>(null)
+  const cardRefs   = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const section = sectionRef.current
     const cards   = cardRefs.current.filter(Boolean) as HTMLDivElement[]
     if (!section || cards.length === 0) return
 
-    // Disable on mobile
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 768px)', () => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          pin: true,
-          start: 'top top',
-          // 300px of scroll per card (2 tweens × 5 cards = 10 steps)
-          end: `+=${cards.length * 300}`,
-          scrub: 0.6,
-        },
-      })
+      let tl: gsap.core.Timeline | null = null
 
-      cards.forEach((card) => {
-        tl.to(card, { scale: 1.5, ease: 'power2.inOut', duration: 1 })
-          .to(card, { scale: 1,   ease: 'power2.inOut', duration: 1 })
-      })
+      const build = () => {
+        // Tear down previous before measuring
+        tl?.scrollTrigger?.kill()
+        tl?.kill()
+        gsap.set(cards, { clearProps: 'transform,zIndex' })
+        void section.getBoundingClientRect() // flush layout
+
+        // Positions relative to section — stable regardless of scroll position.
+        // When GSAP pins (section fixed at top:0 left:0), these become exact
+        // viewport coords, so the translate math is correct.
+        const sr  = section.getBoundingClientRect()
+        const vpW = window.innerWidth
+        const vpH = window.innerHeight
+
+        // Pre-compute offsets so build() can be called at any scroll position
+        const offsets = cards.map(card => {
+          const r  = card.getBoundingClientRect()
+          const cx = r.left - sr.left + r.width  / 2  // card center X within section
+          const cy = r.top  - sr.top  + r.height / 2  // card center Y within section
+          return {
+            tx: vpW / 2 - cx,  // translate to viewport horizontal center
+            ty: vpH / 2 - cy,  // translate to viewport vertical center
+          }
+        })
+
+        tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            pin: true,
+            start: 'top top',
+            // 400px of scroll per card: 2 tweens + 2 sets per card
+            end: `+=${cards.length * 400}`,
+            scrub: 0.8,
+          },
+        })
+
+        cards.forEach((card, i) => {
+          const { tx, ty } = offsets[i]
+          tl!
+            // Raise card before it moves
+            .set(card, { zIndex: 100 })
+            // Fly to viewport center + scale up
+            .to(card, {
+              x: tx,
+              y: ty,
+              scale: 1.5,
+              ease: 'power2.inOut',
+              duration: 1,
+            })
+            // Return to origin + scale back
+            .to(card, {
+              x: 0,
+              y: 0,
+              scale: 1,
+              ease: 'power2.inOut',
+              duration: 1,
+            })
+            // Lower z-index after card returns
+            .set(card, { clearProps: 'zIndex' })
+        })
+      }
+
+      build()
+
+      // Rebuild on resize (grid may reflow, offsets change)
+      let resizeTimer: ReturnType<typeof setTimeout>
+      const onResize = () => {
+        clearTimeout(resizeTimer)
+        resizeTimer = setTimeout(build, 200)
+      }
+      window.addEventListener('resize', onResize)
 
       return () => {
-        tl.scrollTrigger?.kill()
-        tl.kill()
+        window.removeEventListener('resize', onResize)
+        clearTimeout(resizeTimer)
+        tl?.scrollTrigger?.kill()
+        tl?.kill()
+        gsap.set(cards, { clearProps: 'all' })
       }
     })
 
