@@ -3,6 +3,7 @@ import { Navbar }           from './components/Navbar'
 import { Hero }             from './components/Hero'
 import { TrustedBy }        from './components/TrustedBy'
 import { FeaturesCarousel } from './components/FeaturesCarousel'
+import { PlatformFeatures } from './components/PlatformFeatures'
 import { Workflow }         from './components/Workflow'
 import { VerificationDemo } from './components/VerificationDemo'
 import { OrgHub }           from './components/OrgHub'
@@ -26,6 +27,7 @@ export default function App() {
         <Hero />
         <TrustedBy />
         <FeaturesCarousel />
+        <PlatformFeatures />
         <Workflow />
         <VerificationDemo ref={verifyRef} style={fallingStyles[0]} />
         <OrgHub           ref={orgRef}    style={fallingStyles[1]} />
