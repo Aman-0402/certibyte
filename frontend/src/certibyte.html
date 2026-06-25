@@ -22,8 +22,8 @@
       <li><a href="#verify">Verify Certificate</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#" class="btn-ghost">Administrator Login</a>
-      <a href="#" class="btn-nav-outline">Register Organization</a>
+      <a href="#" class="btn-ghost">Login</a>
+      <a href="#" class="btn-nav-outline">Register</a>
     </div>
     <button class="nav-toggle" id="navToggle">
       <span></span><span></span><span></span>
@@ -66,6 +66,49 @@
     </div>
 
     <div class="hero-right-col rv">
+      <div class="hero-cert-visual" aria-label="Live exam and certificate preview">
+        <div class="hero-cert-grid" aria-hidden="true"></div>
+        <div class="hero-cert-card">
+          <div class="hero-cert-brand">
+            <div class="hero-cert-icon">
+              <span></span>
+            </div>
+            <strong>CERTIBYT</strong>
+          </div>
+          <div class="hero-cert-eyebrow" data-hero-stage>EXAM IN PROGRESS</div>
+          <h3 data-hero-title>AWS Cloud Practitioner</h3>
+          <p data-hero-meta>Rahul Sharma · Voucher redeemed</p>
+          <div class="hero-cert-metrics">
+            <div>
+              <strong data-hero-metric-one>42m</strong>
+              <span data-hero-label-one>Remaining</span>
+            </div>
+            <div>
+              <strong data-hero-metric-two>LIVE</strong>
+              <span data-hero-label-two>Status</span>
+            </div>
+            <div>
+              <strong data-hero-metric-three>0</strong>
+              <span data-hero-label-three>Flags</span>
+            </div>
+          </div>
+          <div class="hero-cert-footer">
+            <span></span>
+            <a href="#verify">Verify →</a>
+          </div>
+        </div>
+        <div class="hero-live-badge">
+          <span></span>
+          <div>
+            <small data-hero-badge-label>Exam in progress</small>
+            <strong data-hero-badge-value>14 candidates live</strong>
+          </div>
+        </div>
+        <div class="hero-issue-badge">
+          <small data-hero-footnote-label>This month</small>
+          <strong data-hero-footnote-value>↑ 847 certs issued</strong>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -241,7 +284,7 @@
 </section>
 
 <!-- SECURE VERIFICATION SHOWCASE -->
-<section class="cert-showcase falling-section" id="certShowcase">
+<section class="cert-showcase falling-section" id="verify">
   <div class="container">
     <div class="showcase-inner">
       <div class="showcase-text rv">
@@ -251,6 +294,20 @@
         <div class="showcase-stats">
           <div class="sh-stat"><div class="sh-num stat-num" data-target="100" data-suffix="%">0</div><div class="sh-lbl">Self-serve verification</div></div>
           <div class="sh-stat"><div class="sh-num stat-num" data-target="0" data-suffix=" KB">0</div><div class="sh-lbl">Applicant PII stored publicly</div></div>
+        </div>
+        <div class="verify-demo">
+          <label for="verifyId">Certificate ID</label>
+          <div class="verify-input-row">
+            <input id="verifyId" type="text" value="CB-QN-714X99" aria-label="Certificate ID">
+            <button type="button" id="verifyButton">Verify</button>
+          </div>
+          <div class="verify-result is-valid" id="verifyResult">
+            <span></span>
+            <div>
+              <strong>Credential verified</strong>
+              <p>Issued to Eliza Vance · Quantum Systems & Risk Algorithms</p>
+            </div>
+          </div>
         </div>
       </div>
       

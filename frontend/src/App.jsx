@@ -56,6 +56,89 @@ function App() {
     const carouselTrack = document.getElementById('carouselTrack')
     const carouselProgressBar = document.getElementById('carouselProgressBar')
     const fallingSections = document.querySelectorAll('.falling-section')
+    const heroCard = document.querySelector('.hero-cert-card')
+    const heroStateEls = {
+      stage: document.querySelector('[data-hero-stage]'),
+      title: document.querySelector('[data-hero-title]'),
+      meta: document.querySelector('[data-hero-meta]'),
+      metricOne: document.querySelector('[data-hero-metric-one]'),
+      labelOne: document.querySelector('[data-hero-label-one]'),
+      metricTwo: document.querySelector('[data-hero-metric-two]'),
+      labelTwo: document.querySelector('[data-hero-label-two]'),
+      metricThree: document.querySelector('[data-hero-metric-three]'),
+      labelThree: document.querySelector('[data-hero-label-three]'),
+      badgeLabel: document.querySelector('[data-hero-badge-label]'),
+      badgeValue: document.querySelector('[data-hero-badge-value]'),
+      footnoteLabel: document.querySelector('[data-hero-footnote-label]'),
+      footnoteValue: document.querySelector('[data-hero-footnote-value]'),
+    }
+    const verifyInput = document.getElementById('verifyId')
+    const verifyButton = document.getElementById('verifyButton')
+    const verifyResult = document.getElementById('verifyResult')
+    const heroStates = [
+      {
+        stage: 'VOUCHER REDEEMED',
+        title: 'AWS Cloud Practitioner',
+        meta: 'Rahul Sharma · Access token accepted',
+        metricOne: 'CB-9X2',
+        labelOne: 'Voucher',
+        metricTwo: 'READY',
+        labelTwo: 'Status',
+        metricThree: '1',
+        labelThree: 'Attempt',
+        badgeLabel: 'Identity checked',
+        badgeValue: 'Candidate verified',
+        footnoteLabel: 'Queue',
+        footnoteValue: '14 exams ready',
+      },
+      {
+        stage: 'EXAM IN PROGRESS',
+        title: 'AWS Cloud Practitioner',
+        meta: 'Rahul Sharma · Secure browser active',
+        metricOne: '42m',
+        labelOne: 'Remaining',
+        metricTwo: 'LIVE',
+        labelTwo: 'Status',
+        metricThree: '0',
+        labelThree: 'Flags',
+        badgeLabel: 'Exam in progress',
+        badgeValue: '14 candidates live',
+        footnoteLabel: 'This month',
+        footnoteValue: '847 certs issued',
+      },
+      {
+        stage: 'SCORE CALCULATED',
+        title: 'AWS Cloud Practitioner',
+        meta: 'Rahul Sharma · Submitted 14 Jun 2025',
+        metricOne: '84%',
+        labelOne: 'Score',
+        metricTwo: 'PASS',
+        labelTwo: 'Result',
+        metricThree: '38m',
+        labelThree: 'Duration',
+        badgeLabel: 'Evaluation complete',
+        badgeValue: 'Negative marking applied',
+        footnoteLabel: 'Audit trail',
+        footnoteValue: 'All events sealed',
+      },
+      {
+        stage: 'CERTIFICATE ISSUED',
+        title: 'AWS Cloud Practitioner',
+        meta: 'Rahul Sharma · ID CB-QN-714X99',
+        metricOne: 'PDF',
+        labelOne: 'Credential',
+        metricTwo: 'VALID',
+        labelTwo: 'Lookup',
+        metricThree: '<1s',
+        labelThree: 'Issued',
+        badgeLabel: 'Credential live',
+        badgeValue: 'Ready for employer audit',
+        footnoteLabel: 'Verify ID',
+        footnoteValue: 'CB-QN-714X99',
+      },
+    ]
+    let heroStateIndex = 0
+    let heroStateInterval
 
     const revealObserver = new IntersectionObserver(
       (entries) => {
@@ -183,18 +266,67 @@ function App() {
       })
     }
 
+    const applyHeroState = (state) => {
+      if (!heroCard || !heroStateEls.stage) return
+
+      heroCard.classList.add('is-shifting')
+      window.setTimeout(() => heroCard.classList.remove('is-shifting'), 360)
+
+      Object.entries(state).forEach(([key, value]) => {
+        const element = heroStateEls[key]
+        if (element) element.textContent = value
+      })
+    }
+
+    const rotateHeroState = () => {
+      heroStateIndex = (heroStateIndex + 1) % heroStates.length
+      applyHeroState(heroStates[heroStateIndex])
+    }
+
+    const handleVerify = () => {
+      if (!verifyInput || !verifyResult) return
+
+      const value = verifyInput.value.trim().toUpperCase()
+      const isValid = value === 'CB-QN-714X99'
+      const title = verifyResult.querySelector('strong')
+      const body = verifyResult.querySelector('p')
+
+      verifyResult.classList.toggle('is-valid', isValid)
+
+      if (title) {
+        title.textContent = isValid
+          ? 'Credential verified'
+          : 'No matching credential found'
+      }
+
+      if (body) {
+        body.textContent = isValid
+          ? 'Issued to Eliza Vance · Quantum Systems & Risk Algorithms'
+          : 'Try sample ID CB-QN-714X99 for the live demo result.'
+      }
+    }
+
+    const handleVerifyKeydown = (event) => {
+      if (event.key === 'Enter') handleVerify()
+    }
+
     window.addEventListener('scroll', handleNavScroll)
     window.addEventListener('scroll', handleCarouselScroll)
     window.addEventListener('scroll', handleFallingSectionsScroll)
     window.addEventListener('resize', handleCarouselScroll)
     window.addEventListener('resize', handleFallingSectionsScroll)
     navToggle?.addEventListener('click', handleNavToggle)
+    verifyButton?.addEventListener('click', handleVerify)
+    verifyInput?.addEventListener('keydown', handleVerifyKeydown)
 
     handleNavScroll()
     handleCarouselScroll()
     handleFallingSectionsScroll()
+    applyHeroState(heroStates[0])
+    heroStateInterval = window.setInterval(rotateHeroState, 2600)
 
     return () => {
+      window.clearInterval(heroStateInterval)
       revealObserver.disconnect()
       heroExitObserver?.disconnect()
       dividerObserver.disconnect()
@@ -204,6 +336,8 @@ function App() {
       window.removeEventListener('resize', handleCarouselScroll)
       window.removeEventListener('resize', handleFallingSectionsScroll)
       navToggle?.removeEventListener('click', handleNavToggle)
+      verifyButton?.removeEventListener('click', handleVerify)
+      verifyInput?.removeEventListener('keydown', handleVerifyKeydown)
     }
   }, [])
 
