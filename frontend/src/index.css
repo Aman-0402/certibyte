@@ -34,7 +34,9 @@
     border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground font-sans leading-relaxed;
+    @apply font-sans leading-relaxed;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     overflow-x: hidden;
   }
   html {
