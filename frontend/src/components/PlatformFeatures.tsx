@@ -6,6 +6,8 @@ import { useScrollReveal } from '@/hooks/useScrollReveal'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/* ─── static data ─────────────────────────────────────────────────────────── */
+
 const VOUCHER_CODES = [
   { code: 'ARX-4F2E91', status: 'Used',   statusCls: 'text-slate-400'   },
   { code: 'ARX-B39D02', status: 'Active', statusCls: 'text-emerald-600' },
@@ -22,18 +24,133 @@ const BARS = [
   { h: 'h-[75%]', cls: 'bg-navy' },
 ]
 
-const CARD_BASE =
-  'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative z-0'
+/* ─── card inner content (shared between grid & overlay proxy) ─────────────── */
+
+function CardInner({ idx }: { idx: number }) {
+  switch (idx) {
+    case 0:
+      return (
+        <>
+          <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
+            <Ticket className="w-4 h-4 text-navy" />
+          </div>
+          <h3 className="text-navy-dark font-bold text-base mb-1">Voucher-controlled access</h3>
+          <p className="text-slate-500 text-sm leading-relaxed mb-3">
+            Org admins purchase voucher packages. Each candidate gets a unique ARX-code.
+            No code, no exam. Zero unauthorized attempts.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {VOUCHER_CODES.map(({ code, status, statusCls }) => (
+              <div
+                key={code}
+                className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
+              >
+                <span className="text-slate-600 text-xs font-mono">{code}</span>
+                <span className={`text-xs font-semibold ${statusCls}`}>{status}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )
+
+    case 1:
+      return (
+        <>
+          <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
+            <FileText className="w-4 h-4 text-gold" />
+          </div>
+          <h3 className="text-navy-dark font-bold text-base mb-1">Instant PDF certificates</h3>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            PDF generated the moment a candidate passes. Unique ID on every cert.
+            Employers can verify on your public link.
+          </p>
+        </>
+      )
+
+    case 2:
+      return (
+        <>
+          <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
+            <Monitor className="w-4 h-4 text-navy" />
+          </div>
+          <h3 className="text-navy-dark font-bold text-base mb-1">Proctored environment</h3>
+          <p className="text-slate-500 text-sm leading-relaxed mb-2">
+            Fullscreen lock, tab-switch detection, webcam monitoring.
+            No data stored. Just live oversight.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {['Fullscreen', 'Tab detect', 'Webcam', 'Live view'].map(tag => (
+              <span
+                key={tag}
+                className="text-xs font-medium text-navy bg-navy/8 border border-navy/15 rounded-full px-2.5 py-0.5"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </>
+      )
+
+    case 3:
+      return (
+        <>
+          <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
+            <Zap className="w-4 h-4 text-gold" />
+          </div>
+          <h3 className="text-navy-dark font-bold text-base mb-1">Negative marking</h3>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            Set per-exam deductions for wrong answers. Configurable penalty — keeps scoring rigorous.
+          </p>
+        </>
+      )
+
+    case 4:
+      return (
+        <>
+          <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
+            <BarChart2 className="w-4 h-4 text-navy" />
+          </div>
+          <h3 className="text-navy-dark font-bold text-base mb-1">Deep analytics</h3>
+          <p className="text-slate-500 text-sm leading-relaxed mb-2">
+            Pass rates, attempt trends, per-question accuracy. Spot weak areas fast. Export-ready.
+          </p>
+          <div className="flex items-end gap-1 h-6">
+            {BARS.map(({ h, cls }, i) => (
+              <div key={i} className={`flex-1 rounded-sm ${h} ${cls}`} />
+            ))}
+          </div>
+        </>
+      )
+
+    default:
+      return null
+  }
+}
+
+const CARD_INDICES   = [0, 1, 2, 3, 4] as const
+const CARD_COL_SPAN  = ['md:col-span-2', '', '', '', ''] as const
+
+/* Card classes: relative + explicit z-0 for consistent grid stacking */
+const GRID_CARD  = 'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative z-0'
+/* Proxy lives in the fixed overlay — absolute, no stacking context restriction */
+const PROXY_CARD = 'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 absolute origin-center will-change-transform'
+
+/* ─── component ────────────────────────────────────────────────────────────── */
 
 export function PlatformFeatures() {
   const reveal     = useScrollReveal()
   const sectionRef = useRef<HTMLElement>(null)
   const cardRefs   = useRef<(HTMLDivElement | null)[]>([])
+  const proxyRefs  = useRef<(HTMLDivElement | null)[]>([])
+
+  const setCard  = (i: number) => (el: HTMLDivElement | null) => { cardRefs.current[i]  = el }
+  const setProxy = (i: number) => (el: HTMLDivElement | null) => { proxyRefs.current[i] = el }
 
   useEffect(() => {
     const section = sectionRef.current
-    const cards   = cardRefs.current.filter(Boolean) as HTMLDivElement[]
-    if (!section || cards.length === 0) return
+    const cards   = cardRefs.current.filter(Boolean)  as HTMLDivElement[]
+    const proxies = proxyRefs.current.filter(Boolean) as HTMLDivElement[]
+    if (!section || cards.length === 0 || proxies.length === 0) return
 
     const mm = gsap.matchMedia()
 
@@ -41,27 +158,36 @@ export function PlatformFeatures() {
       let tl: gsap.core.Timeline | null = null
 
       const build = () => {
-        // Tear down previous before measuring
         tl?.scrollTrigger?.kill()
         tl?.kill()
-        gsap.set(cards, { clearProps: 'transform,zIndex' })
+        // Reset all animation state
+        gsap.set(cards,   { clearProps: 'opacity' })
+        gsap.set(proxies, { clearProps: 'all', display: 'none' })
         void section.getBoundingClientRect() // flush layout
 
-        // Positions relative to section — stable regardless of scroll position.
-        // When GSAP pins (section fixed at top:0 left:0), these become exact
-        // viewport coords, so the translate math is correct.
+        // Positions are relative to section — when GSAP pins (section top=0),
+        // these equal exact viewport coordinates.
         const sr  = section.getBoundingClientRect()
         const vpW = window.innerWidth
         const vpH = window.innerHeight
 
-        // Pre-compute offsets so build() can be called at any scroll position
-        const offsets = cards.map(card => {
-          const r  = card.getBoundingClientRect()
-          const cx = r.left - sr.left + r.width  / 2  // card center X within section
-          const cy = r.top  - sr.top  + r.height / 2  // card center Y within section
+        // Pre-size each proxy to match its grid card, positioned at the same viewport coords
+        const offsets = cards.map((card, i) => {
+          const r    = card.getBoundingClientRect()
+          const relX = r.left - sr.left
+          const relY = r.top  - sr.top
+
+          // Set proxy dimensions + position once (stable until next build)
+          gsap.set(proxies[i], {
+            left:   relX,
+            top:    relY,
+            width:  r.width,
+            // height intentional omitted — content matches original, let it be natural
+          })
+
           return {
-            tx: vpW / 2 - cx,  // translate to viewport horizontal center
-            ty: vpH / 2 - cy,  // translate to viewport vertical center
+            tx: vpW / 2 - (relX + r.width  / 2),
+            ty: vpH / 2 - (relY + r.height / 2),
           }
         })
 
@@ -70,33 +196,34 @@ export function PlatformFeatures() {
             trigger: section,
             pin: true,
             start: 'top top',
-            // 400px of scroll per card: 2 tweens + 2 sets per card
             end: `+=${cards.length * 400}`,
             scrub: 0.8,
           },
         })
 
         cards.forEach((card, i) => {
-          const { tx, ty } = offsets[i]
+          const proxy  = proxies[i]
           const others = cards.filter((_, j) => j !== i)
+          const { tx, ty } = offsets[i]
 
           tl!
-            // Raise active card above siblings (all others are z-0)
-            .set(card, { zIndex: 100 })
-            // Fly to center + simultaneously dim surrounding cards
-            .to(card,   { x: tx, y: ty, scale: 1.5, ease: 'power2.inOut', duration: 1 })
+            // Reveal proxy at card's exact grid position, hide original (same-time)
+            .set(proxy, { display: 'block', x: 0, y: 0, scale: 1 })
+            .set(card,  { opacity: 0 }, '<')
+            // Proxy flies to viewport center; other grid cards dim simultaneously
+            .to(proxy,  { x: tx, y: ty, scale: 1.5, ease: 'power2.inOut', duration: 1 })
             .to(others, { opacity: 0.2,              ease: 'power2.inOut', duration: 1 }, '<')
-            // Return to origin + restore others simultaneously
-            .to(card,   { x: 0,  y: 0,  scale: 1,   ease: 'power2.inOut', duration: 1 })
+            // Proxy returns to grid position; others restore simultaneously
+            .to(proxy,  { x: 0,  y: 0,  scale: 1,   ease: 'power2.inOut', duration: 1 })
             .to(others, { opacity: 1,                ease: 'power2.inOut', duration: 1 }, '<')
-            // Drop z-index after card is back in place
-            .set(card, { clearProps: 'zIndex' })
+            // Swap back: restore original, hide proxy (same-time)
+            .set(card,  { opacity: 1 })
+            .set(proxy, { display: 'none' }, '<')
         })
       }
 
       build()
 
-      // Rebuild on resize (grid may reflow, offsets change)
       let resizeTimer: ReturnType<typeof setTimeout>
       const onResize = () => {
         clearTimeout(resizeTimer)
@@ -109,121 +236,59 @@ export function PlatformFeatures() {
         clearTimeout(resizeTimer)
         tl?.scrollTrigger?.kill()
         tl?.kill()
-        gsap.set(cards, { clearProps: 'all' })
+        gsap.set(cards,   { clearProps: 'opacity' })
+        gsap.set(proxies, { clearProps: 'all', display: 'none' })
       }
     })
 
     return () => mm.revert()
   }, [])
 
-  const setRef = (i: number) => (el: HTMLDivElement | null) => {
-    cardRefs.current[i] = el
-  }
-
   return (
-    <section ref={sectionRef} className="py-10 bg-slate-50/50" id="platformFeatures">
-      <div className="max-w-[1140px] mx-auto px-6">
-
-        {/* Header */}
-        <div ref={reveal} className="rv mb-6">
-          <div className="text-xs font-bold tracking-widest text-gold uppercase mb-2">
-            Platform Features
+    <>
+      {/*
+        Fixed overlay — position: fixed, inset-0, z-[99999].
+        Proxy cards live here. They are OUTSIDE the section and the grid,
+        so no parent can clip or stack-context-restrict them.
+      */}
+      <div className="fixed inset-0 pointer-events-none z-[99999]">
+        {CARD_INDICES.map(i => (
+          <div key={i} ref={setProxy(i)} className={`${PROXY_CARD} hidden`}>
+            <CardInner idx={i} />
           </div>
-          <h2 className="font-serif text-2xl lg:text-3xl font-bold text-navy-dark">
-            Everything works out of the box.{' '}
-            <span className="text-slate-400">No setup hell.</span>
-          </h2>
-        </div>
-
-        {/* Bento grid — relative+z-0 ensures active card's z-100 stacks correctly within this context */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 relative z-0">
-
-          {/* Voucher — wide */}
-          <div ref={setRef(0)} className={`md:col-span-2 ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
-              <Ticket className="w-4 h-4 text-navy" />
-            </div>
-            <h3 className="text-navy-dark font-bold text-base mb-1">Voucher-controlled access</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-3">
-              Org admins purchase voucher packages. Each candidate gets a unique ARX-code.
-              No code, no exam. Zero unauthorized attempts.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {VOUCHER_CODES.map(({ code, status, statusCls }) => (
-                <div
-                  key={code}
-                  className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
-                >
-                  <span className="text-slate-600 text-xs font-mono">{code}</span>
-                  <span className={`text-xs font-semibold ${statusCls}`}>{status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* PDF Certificates */}
-          <div ref={setRef(1)} className={CARD_BASE}>
-            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
-              <FileText className="w-4 h-4 text-gold" />
-            </div>
-            <h3 className="text-navy-dark font-bold text-base mb-1">Instant PDF certificates</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              PDF generated the moment a candidate passes. Unique ID on every cert.
-              Employers can verify on your public link.
-            </p>
-          </div>
-
-          {/* Proctored */}
-          <div ref={setRef(2)} className={CARD_BASE}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
-              <Monitor className="w-4 h-4 text-navy" />
-            </div>
-            <h3 className="text-navy-dark font-bold text-base mb-1">Proctored environment</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-2">
-              Fullscreen lock, tab-switch detection, webcam monitoring.
-              No data stored. Just live oversight.
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {['Fullscreen', 'Tab detect', 'Webcam', 'Live view'].map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs font-medium text-navy bg-navy/8 border border-navy/15 rounded-full px-2.5 py-0.5"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Negative marking */}
-          <div ref={setRef(3)} className={CARD_BASE}>
-            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
-              <Zap className="w-4 h-4 text-gold" />
-            </div>
-            <h3 className="text-navy-dark font-bold text-base mb-1">Negative marking</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Set per-exam deductions for wrong answers. Configurable penalty — keeps scoring rigorous.
-            </p>
-          </div>
-
-          {/* Deep analytics */}
-          <div ref={setRef(4)} className={CARD_BASE}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
-              <BarChart2 className="w-4 h-4 text-navy" />
-            </div>
-            <h3 className="text-navy-dark font-bold text-base mb-1">Deep analytics</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-2">
-              Pass rates, attempt trends, per-question accuracy. Spot weak areas fast. Export-ready.
-            </p>
-            <div className="flex items-end gap-1 h-6">
-              {BARS.map(({ h, cls }, i) => (
-                <div key={i} className={`flex-1 rounded-sm ${h} ${cls}`} />
-              ))}
-            </div>
-          </div>
-
-        </div>
+        ))}
       </div>
-    </section>
+
+      {/* Pinned section */}
+      <section ref={sectionRef} className="py-10 bg-slate-50/50" id="platformFeatures">
+        <div className="max-w-[1140px] mx-auto px-6">
+
+          {/* Header */}
+          <div ref={reveal} className="rv mb-6">
+            <div className="text-xs font-bold tracking-widest text-gold uppercase mb-2">
+              Platform Features
+            </div>
+            <h2 className="font-serif text-2xl lg:text-3xl font-bold text-navy-dark">
+              Everything works out of the box.{' '}
+              <span className="text-slate-400">No setup hell.</span>
+            </h2>
+          </div>
+
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {CARD_INDICES.map(i => (
+              <div
+                key={i}
+                ref={setCard(i)}
+                className={`${CARD_COL_SPAN[i]} ${GRID_CARD}`}
+              >
+                <CardInner idx={i} />
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+    </>
   )
 }
