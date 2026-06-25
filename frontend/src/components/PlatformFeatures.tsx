@@ -9,7 +9,7 @@ const VOUCHER_CODES = [
 
 const BAR_HEIGHTS = [40, 65, 55, 80, 70, 90, 75]
 
-const CARD_BASE = 'bg-white rounded-2xl border border-slate-100 shadow-sm p-5'
+const CARD_BASE = 'bg-white rounded-2xl border border-slate-300 shadow-sm p-5'
 
 export function PlatformFeatures() {
   const reveal = useScrollReveal()
