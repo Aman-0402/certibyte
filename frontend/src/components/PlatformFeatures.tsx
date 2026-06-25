@@ -23,7 +23,7 @@ const BARS = [
 ]
 
 const CARD_BASE =
-  'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative'
+  'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative z-0'
 
 export function PlatformFeatures() {
   const reveal     = useScrollReveal()
@@ -78,26 +78,18 @@ export function PlatformFeatures() {
 
         cards.forEach((card, i) => {
           const { tx, ty } = offsets[i]
+          const others = cards.filter((_, j) => j !== i)
+
           tl!
-            // Raise card before it moves
+            // Raise active card above siblings (all others are z-0)
             .set(card, { zIndex: 100 })
-            // Fly to viewport center + scale up
-            .to(card, {
-              x: tx,
-              y: ty,
-              scale: 1.5,
-              ease: 'power2.inOut',
-              duration: 1,
-            })
-            // Return to origin + scale back
-            .to(card, {
-              x: 0,
-              y: 0,
-              scale: 1,
-              ease: 'power2.inOut',
-              duration: 1,
-            })
-            // Lower z-index after card returns
+            // Fly to center + simultaneously dim surrounding cards
+            .to(card,   { x: tx, y: ty, scale: 1.5, ease: 'power2.inOut', duration: 1 })
+            .to(others, { opacity: 0.2,              ease: 'power2.inOut', duration: 1 }, '<')
+            // Return to origin + restore others simultaneously
+            .to(card,   { x: 0,  y: 0,  scale: 1,   ease: 'power2.inOut', duration: 1 })
+            .to(others, { opacity: 1,                ease: 'power2.inOut', duration: 1 }, '<')
+            // Drop z-index after card is back in place
             .set(card, { clearProps: 'zIndex' })
         })
       }
@@ -143,8 +135,8 @@ export function PlatformFeatures() {
           </h2>
         </div>
 
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+        {/* Bento grid — relative+z-0 ensures active card's z-100 stacks correctly within this context */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 relative z-0">
 
           {/* Voucher — wide */}
           <div ref={setRef(0)} className={`md:col-span-2 ${CARD_BASE}`}>
