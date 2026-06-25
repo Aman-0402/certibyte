@@ -1,21 +1,75 @@
+import { useEffect, useRef } from 'react'
 import { Ticket, FileText, Monitor, Zap, BarChart2 } from 'lucide-react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 
+gsap.registerPlugin(ScrollTrigger)
+
 const VOUCHER_CODES = [
-  { code: 'ARX-4F2E91', status: 'Used',   statusCls: 'text-slate-400'  },
+  { code: 'ARX-4F2E91', status: 'Used',   statusCls: 'text-slate-400'   },
   { code: 'ARX-B39D02', status: 'Active', statusCls: 'text-emerald-600' },
-  { code: 'ARX-CC71A4', status: 'Unused', statusCls: 'text-slate-400'  },
+  { code: 'ARX-CC71A4', status: 'Unused', statusCls: 'text-slate-400'   },
 ]
 
-const BAR_HEIGHTS = [40, 65, 55, 80, 70, 90, 75]
+const BARS = [
+  { h: 'h-[40%]', cls: 'bg-navy' },
+  { h: 'h-[65%]', cls: 'bg-gold' },
+  { h: 'h-[55%]', cls: 'bg-navy' },
+  { h: 'h-[80%]', cls: 'bg-gold' },
+  { h: 'h-[70%]', cls: 'bg-navy' },
+  { h: 'h-[90%]', cls: 'bg-gold' },
+  { h: 'h-[75%]', cls: 'bg-navy' },
+]
 
-const CARD_BASE = 'bg-white rounded-2xl border border-slate-300 shadow-sm p-5'
+const CARD_BASE =
+  'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 relative'
 
 export function PlatformFeatures() {
-  const reveal = useScrollReveal()
+  const reveal       = useScrollReveal()
+  const sectionRef   = useRef<HTMLElement>(null)
+  const cardRefs     = useRef<(HTMLDivElement | null)[]>([])
+
+  useEffect(() => {
+    const section = sectionRef.current
+    const cards   = cardRefs.current.filter(Boolean) as HTMLDivElement[]
+    if (!section || cards.length === 0) return
+
+    // Disable on mobile
+    const mm = gsap.matchMedia()
+
+    mm.add('(min-width: 768px)', () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          pin: true,
+          start: 'top top',
+          // 300px of scroll per card (2 tweens × 5 cards = 10 steps)
+          end: `+=${cards.length * 300}`,
+          scrub: 0.6,
+        },
+      })
+
+      cards.forEach((card) => {
+        tl.to(card, { scale: 1.5, ease: 'power2.inOut', duration: 1 })
+          .to(card, { scale: 1,   ease: 'power2.inOut', duration: 1 })
+      })
+
+      return () => {
+        tl.scrollTrigger?.kill()
+        tl.kill()
+      }
+    })
+
+    return () => mm.revert()
+  }, [])
+
+  const setRef = (i: number) => (el: HTMLDivElement | null) => {
+    cardRefs.current[i] = el
+  }
 
   return (
-    <section className="py-10 bg-slate-50/50" id="platformFeatures">
+    <section ref={sectionRef} className="py-10 bg-slate-50/50" id="platformFeatures">
       <div className="max-w-[1140px] mx-auto px-6">
 
         {/* Header */}
@@ -33,12 +87,12 @@ export function PlatformFeatures() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
 
           {/* Voucher — wide */}
-          <div ref={reveal} className={`rv md:col-span-2 ${CARD_BASE}`}>
+          <div ref={setRef(0)} className={`md:col-span-2 ${CARD_BASE}`}>
             <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <Ticket className="w-4 h-4 text-navy" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Voucher-controlled access</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-2">
+            <p className="text-slate-500 text-sm leading-relaxed mb-3">
               Org admins purchase voucher packages. Each candidate gets a unique ARX-code.
               No code, no exam. Zero unauthorized attempts.
             </p>
@@ -56,7 +110,7 @@ export function PlatformFeatures() {
           </div>
 
           {/* PDF Certificates */}
-          <div ref={reveal} className={`rv ${CARD_BASE}`}>
+          <div ref={setRef(1)} className={CARD_BASE}>
             <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
               <FileText className="w-4 h-4 text-gold" />
             </div>
@@ -68,7 +122,7 @@ export function PlatformFeatures() {
           </div>
 
           {/* Proctored */}
-          <div ref={reveal} className={`rv ${CARD_BASE}`}>
+          <div ref={setRef(2)} className={CARD_BASE}>
             <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <Monitor className="w-4 h-4 text-navy" />
             </div>
@@ -90,7 +144,7 @@ export function PlatformFeatures() {
           </div>
 
           {/* Negative marking */}
-          <div ref={reveal} className={`rv ${CARD_BASE}`}>
+          <div ref={setRef(3)} className={CARD_BASE}>
             <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
               <Zap className="w-4 h-4 text-gold" />
             </div>
@@ -101,7 +155,7 @@ export function PlatformFeatures() {
           </div>
 
           {/* Deep analytics */}
-          <div ref={reveal} className={`rv ${CARD_BASE}`}>
+          <div ref={setRef(4)} className={CARD_BASE}>
             <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <BarChart2 className="w-4 h-4 text-navy" />
             </div>
@@ -110,12 +164,8 @@ export function PlatformFeatures() {
               Pass rates, attempt trends, per-question accuracy. Spot weak areas fast. Export-ready.
             </p>
             <div className="flex items-end gap-1 h-6">
-              {BAR_HEIGHTS.map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-sm"
-                  style={{ height: `${h}%`, backgroundColor: i % 2 === 0 ? '#1e3a8a' : '#b45309' }}
-                />
+              {BARS.map(({ h, cls }, i) => (
+                <div key={i} className={`flex-1 rounded-sm ${h} ${cls}`} />
               ))}
             </div>
           </div>
