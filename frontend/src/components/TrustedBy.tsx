@@ -36,7 +36,7 @@ export function TrustedBy() {
             <div
               key={label}
               ref={reveal}
-              className={`rv rv-pop rv-d${i + 1} bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center`}
+              className={`rv rv-zoom rv-d${i + 1} bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center`}
             >
               <div
                 className="stat-num text-3xl font-bold text-navy-dark mb-1"
