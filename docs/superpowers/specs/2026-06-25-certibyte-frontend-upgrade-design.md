@@ -84,13 +84,14 @@ frontend/src/
 
 ## Hooks Design
 
-All hooks return values/state only. Zero direct DOM mutation inside hooks. Components own their DOM.
+Hooks return values/state where possible. Components own their DOM. Exception: `useScrollReveal` directly adds the `vis` class to observed elements — this matches original behavior and keeps reveal logic centralized in one place.
 
-### `useScrollReveal(ref)`
-- `IntersectionObserver` on `ref` (threshold 0.1, rootMargin `0px 0px -50px 0px`)
-- On intersect: returns `isVisible: boolean` → component applies reveal class
-- Also triggers counter animation for any `[data-counter]` elements inside ref
-- Each component calls this on its own ref
+### `useScrollReveal()`
+- Returns a `ref callback` to spread onto any element: `<div ref={reveal()}>`
+- Internally creates one `IntersectionObserver` instance per call (threshold 0.1, rootMargin `0px 0px -50px 0px`)
+- On intersect: adds `vis` class directly to the observed element — preserves per-element stagger when multiple elements in a component each call `reveal()`
+- Also fires counter animation for any `[data-counter]` inside the revealed element
+- Components call `useScrollReveal()` once and spread the returned ref onto each `[data-reveal]` child individually — matches original per-element granularity
 
 ### `useHeroRotation(states[])`
 - Accepts array of 4 state objects as config
