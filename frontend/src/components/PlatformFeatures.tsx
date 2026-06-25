@@ -9,17 +9,17 @@ const VOUCHER_CODES = [
 
 const BAR_HEIGHTS = [40, 65, 55, 80, 70, 90, 75]
 
-const CARD_BASE = 'bg-white rounded-2xl border border-slate-100 shadow-sm p-6'
+const CARD_BASE = 'bg-white rounded-2xl border border-slate-100 shadow-sm p-5'
 
 export function PlatformFeatures() {
   const reveal = useScrollReveal()
 
   return (
-    <section className="py-14 bg-slate-50/50" id="platformFeatures">
+    <section className="py-10 bg-slate-50/50" id="platformFeatures">
       <div className="max-w-[1140px] mx-auto px-6">
 
         {/* Header */}
-        <div ref={reveal} className="rv mb-8">
+        <div ref={reveal} className="rv mb-6">
           <div className="text-xs font-bold tracking-widest text-gold uppercase mb-2">
             Platform Features
           </div>
@@ -30,15 +30,15 @@ export function PlatformFeatures() {
         </div>
 
         {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
 
           {/* Voucher — wide */}
           <div ref={reveal} className={`rv md:col-span-2 ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <Ticket className="w-4 h-4 text-navy" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Voucher-controlled access</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">
+            <p className="text-slate-500 text-sm leading-relaxed mb-2">
               Org admins purchase voucher packages. Each candidate gets a unique ARX-code.
               No code, no exam. Zero unauthorized attempts.
             </p>
@@ -57,7 +57,7 @@ export function PlatformFeatures() {
 
           {/* PDF Certificates */}
           <div ref={reveal} className={`rv ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
               <FileText className="w-4 h-4 text-gold" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Instant PDF certificates</h3>
@@ -69,11 +69,11 @@ export function PlatformFeatures() {
 
           {/* Proctored */}
           <div ref={reveal} className={`rv ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <Monitor className="w-4 h-4 text-navy" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Proctored environment</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-3">
+            <p className="text-slate-500 text-sm leading-relaxed mb-2">
               Fullscreen lock, tab-switch detection, webcam monitoring.
               No data stored. Just live oversight.
             </p>
@@ -91,7 +91,7 @@ export function PlatformFeatures() {
 
           {/* Negative marking */}
           <div ref={reveal} className={`rv ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center mb-3">
               <Zap className="w-4 h-4 text-gold" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Negative marking</h3>
@@ -102,14 +102,14 @@ export function PlatformFeatures() {
 
           {/* Deep analytics */}
           <div ref={reveal} className={`rv ${CARD_BASE}`}>
-            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mb-3">
               <BarChart2 className="w-4 h-4 text-navy" />
             </div>
             <h3 className="text-navy-dark font-bold text-base mb-1">Deep analytics</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-3">
+            <p className="text-slate-500 text-sm leading-relaxed mb-2">
               Pass rates, attempt trends, per-question accuracy. Spot weak areas fast. Export-ready.
             </p>
-            <div className="flex items-end gap-1 h-8">
+            <div className="flex items-end gap-1 h-6">
               {BAR_HEIGHTS.map((h, i) => (
                 <div
                   key={i}
