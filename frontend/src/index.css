@@ -1,3 +1,164 @@
-#root {
-  min-height: 100vh;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn CSS variables — mapped to navy/gold palette */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 28% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 222 72% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 215 28% 17%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 33 91% 37%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 72% 35%;
+    --radius: 0.375rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border box-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans leading-relaxed;
+    overflow-x: hidden;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================
+   SCROLL REVEAL ANIMATIONS
+   (.rv → add .vis class via useScrollReveal)
+   ============================================ */
+
+.rv {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rv.vis {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rv-fade {
+  opacity: 0;
+  transform: none !important;
+  transition: opacity 0.9s ease-out !important;
+}
+.rv-fade.vis { opacity: 1; }
+
+.rv-slide-up {
+  opacity: 0;
+  transform: translateY(40px) !important;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.rv-slide-up.vis {
+  opacity: 1;
+  transform: translateY(0) !important;
+}
+
+.rv-pop {
+  opacity: 0;
+  transform: scale(0.88) translateY(20px) !important;
+  transition: opacity 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.rv-pop.vis {
+  opacity: 1;
+  transform: scale(1) translateY(0) !important;
+}
+
+.rv-d1 { transition-delay: 0.05s !important; }
+.rv-d2 { transition-delay: 0.15s !important; }
+.rv-d3 { transition-delay: 0.25s !important; }
+.rv-d4 { transition-delay: 0.35s !important; }
+.rv-d5 { transition-delay: 0.45s !important; }
+
+/* ============================================
+   HERO CARD SHIFT ANIMATION
+   ============================================ */
+
+.hero-cert-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.hero-cert-card.is-shifting {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 28px 62px rgba(15, 23, 42, 0.17);
+}
+
+/* ============================================
+   CAROUSEL STICKY CONTAINER
+   ============================================ */
+
+.carousel-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Warm radial blush in carousel card top-right */
+.carousel-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180, 83, 9, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ============================================
+   FALLING SECTIONS (desktop ≥992px)
+   ============================================ */
+
+@media (min-width: 992px) {
+  .falling-section {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    transform-origin: center center;
+    will-change: transform, opacity, filter;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out, filter 0.1s ease-out;
+  }
+  .fs-verify  { background: #ffffff; z-index: 10; box-shadow: 0 -20px 40px rgba(15,23,42,0.03); }
+  .fs-org     { background: #f8fafc; z-index: 11; box-shadow: 0 -25px 50px rgba(15,23,42,0.05); }
+  .fs-testi   { background: #ffffff; z-index: 12; box-shadow: 0 -30px 60px rgba(15,23,42,0.08); }
+  .fs-cta     { background: #0f172a; z-index: 13; box-shadow: 0 -35px 70px rgba(15,23,42,0.12); }
+}
+
+/* Hero grid dot background */
+.hero-grid-bg {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
