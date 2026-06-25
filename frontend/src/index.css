@@ -158,13 +158,6 @@
   .fs-cta     { background: #0f172a; z-index: 13; box-shadow: 0 -35px 70px rgba(15,23,42,0.12); }
 }
 
-/* Hero card scroll-driven scale */
-.hero-card-scaler {
-  transform: scale(var(--card-scale, 0.28));
-  transform-origin: center top;
-  will-change: transform;
-}
-
 /* Hero grid dot background */
 .hero-grid-bg {
   background-image:

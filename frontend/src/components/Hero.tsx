@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
@@ -7,25 +6,6 @@ import { useHeroRotation } from '@/hooks/useHeroRotation'
 export function Hero() {
   const reveal = useScrollReveal()
   const { state, isShifting } = useHeroRotation()
-  const sectionRef = useRef<HTMLElement>(null)
-  const [cardScale, setCardScale] = useState(0.28)
-
-  useEffect(() => {
-    function handle() {
-      const section = sectionRef.current
-      if (!section) return
-      // Scale from 0.28 → 1 over the first 55% of the hero height
-      const scrolled = window.scrollY
-      const threshold = section.offsetHeight * 0.55
-      const progress = Math.min(1, Math.max(0, scrolled / threshold))
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCardScale(0.28 + (1 - 0.28) * eased)
-    }
-    window.addEventListener('scroll', handle, { passive: true })
-    handle()
-    return () => window.removeEventListener('scroll', handle)
-  }, [])
 
   const metrics = [
     [state.metricOne,   state.labelOne],
@@ -35,7 +15,6 @@ export function Hero() {
 
   return (
     <section
-      ref={sectionRef}
       className="relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden bg-white"
       id="hero"
     >
@@ -82,11 +61,7 @@ export function Hero() {
 
         {/* Right — cert card */}
         <div ref={reveal} className="rv flex justify-center lg:justify-end">
-          <div
-            className="hero-card-scaler relative w-full max-w-[340px]"
-            // eslint-disable-next-line react/forbid-dom-props
-            style={{ '--card-scale': cardScale } as React.CSSProperties}
-          >
+          <div className="relative w-full max-w-[340px]">
             {/* Grid bg */}
             <div className="absolute inset-0 rounded-2xl hero-grid-bg pointer-events-none" aria-hidden="true" />
 
