@@ -21,6 +21,10 @@ export function useCarousel(
       }
       const rect = section.getBoundingClientRect()
       const scrollDistance = rect.height - window.innerHeight
+      if (scrollDistance <= 0) {
+        setState({ progress: 0, maxTranslate: 0 })
+        return
+      }
       const p = Math.min(1, Math.max(0, -rect.top / scrollDistance))
       const maxT = Math.max(0, track.scrollWidth - window.innerWidth + window.innerWidth * 0.2)
       setState({ progress: p, maxTranslate: maxT })

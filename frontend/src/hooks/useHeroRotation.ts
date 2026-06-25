@@ -59,14 +59,18 @@ export function useHeroRotation(interval = 2600) {
   const [isShifting, setIsShifting] = useState(false)
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
     const id = setInterval(() => {
       setIsShifting(true)
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setIndex((i) => (i + 1) % HERO_STATES.length)
         setIsShifting(false)
       }, 360)
     }, interval)
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(id)
+      clearTimeout(timeoutId)
+    }
   }, [interval])
 
   return { state: HERO_STATES[index], isShifting }
