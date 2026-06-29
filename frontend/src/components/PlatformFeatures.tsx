@@ -159,7 +159,8 @@ export function PlatformFeatures() {
     const showOverlay = () => { overlay.style.visibility = 'visible' }
     const hideOverlay = () => {
       overlay.style.visibility = 'hidden'
-      gsap.set(proxies, { autoAlpha: 0 })
+      // clearProps:'transform' resets x/y/scale from previous animation
+      gsap.set(proxies, { clearProps: 'transform', autoAlpha: 0 })
       gsap.set(cards,   { clearProps: 'opacity' })
     }
 
@@ -257,7 +258,7 @@ export function PlatformFeatures() {
       */}
       <div ref={overlayRef} className="fixed inset-0 pointer-events-none z-[99999] invisible">
         {CARD_INDICES.map(i => (
-          <div key={i} ref={setProxy(i)} className={`${PROXY_CARD} hidden`}>
+          <div key={i} ref={setProxy(i)} className={PROXY_CARD}>
             <CardInner idx={i} />
           </div>
         ))}
