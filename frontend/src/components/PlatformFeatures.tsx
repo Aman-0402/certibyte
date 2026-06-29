@@ -140,6 +140,7 @@ const PROXY_CARD = 'bg-white rounded-2xl border border-slate-300 shadow-sm p-5 a
 export function PlatformFeatures() {
   const reveal     = useScrollReveal()
   const sectionRef = useRef<HTMLElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const cardRefs   = useRef<(HTMLDivElement | null)[]>([])
   const proxyRefs  = useRef<(HTMLDivElement | null)[]>([])
 
@@ -148,9 +149,19 @@ export function PlatformFeatures() {
 
   useEffect(() => {
     const section = sectionRef.current
+    const overlay = overlayRef.current
     const cards   = cardRefs.current.filter(Boolean)  as HTMLDivElement[]
     const proxies = proxyRefs.current.filter(Boolean) as HTMLDivElement[]
-    if (!section || cards.length === 0 || proxies.length === 0) return
+    if (!section || !overlay || cards.length === 0 || proxies.length === 0) return
+
+    // Helpers — show/hide the entire overlay so proxies can never bleed outside
+    // the pin window regardless of what GSAP's timeline pre-renders at progress=0
+    const showOverlay = () => { overlay.style.visibility = 'visible' }
+    const hideOverlay = () => {
+      overlay.style.visibility = 'hidden'
+      gsap.set(proxies, { autoAlpha: 0 })
+      gsap.set(cards,   { clearProps: 'opacity' })
+    }
 
     const mm = gsap.matchMedia()
 
@@ -160,31 +171,20 @@ export function PlatformFeatures() {
       const build = () => {
         tl?.scrollTrigger?.kill()
         tl?.kill()
-        // Reset all animation state
-        gsap.set(cards,   { clearProps: 'opacity' })
-        gsap.set(proxies, { clearProps: 'all', display: 'none' })
+        hideOverlay()
         void section.getBoundingClientRect() // flush layout
 
-        // Positions are relative to section — when GSAP pins (section top=0),
-        // these equal exact viewport coordinates.
         const sr  = section.getBoundingClientRect()
         const vpW = window.innerWidth
         const vpH = window.innerHeight
 
-        // Pre-size each proxy to match its grid card, positioned at the same viewport coords
+        // Pre-position each proxy to match its grid card (coords relative to section).
+        // When GSAP pins (section.top = 0) these become exact viewport coords.
         const offsets = cards.map((card, i) => {
           const r    = card.getBoundingClientRect()
           const relX = r.left - sr.left
           const relY = r.top  - sr.top
-
-          // Set proxy dimensions + position once (stable until next build)
-          gsap.set(proxies[i], {
-            left:   relX,
-            top:    relY,
-            width:  r.width,
-            // height intentional omitted — content matches original, let it be natural
-          })
-
+          gsap.set(proxies[i], { left: relX, top: relY, width: r.width, autoAlpha: 0 })
           return {
             tx: vpW / 2 - (relX + r.width  / 2),
             ty: vpH / 2 - (relY + r.height / 2),
@@ -198,6 +198,11 @@ export function PlatformFeatures() {
             start: 'top top',
             end: `+=${cards.length * 400}`,
             scrub: 0.8,
+            // Only make overlay visible while the section is actually pinned
+            onEnter:     showOverlay,
+            onLeave:     hideOverlay,
+            onEnterBack: showOverlay,
+            onLeaveBack: hideOverlay,
           },
         })
 
@@ -207,18 +212,18 @@ export function PlatformFeatures() {
           const { tx, ty } = offsets[i]
 
           tl!
-            // Reveal proxy at card's exact grid position, hide original (same-time)
-            .set(proxy, { display: 'block', x: 0, y: 0, scale: 1 })
+            // Show proxy at card position + hide original (simultaneous)
+            .set(proxy, { autoAlpha: 1, x: 0, y: 0, scale: 1 })
             .set(card,  { opacity: 0 }, '<')
-            // Proxy flies to viewport center; other grid cards dim simultaneously
+            // Proxy flies to viewport center; other cards dim
             .to(proxy,  { x: tx, y: ty, scale: 1.5, ease: 'power2.inOut', duration: 1 })
             .to(others, { opacity: 0.2,              ease: 'power2.inOut', duration: 1 }, '<')
-            // Proxy returns to grid position; others restore simultaneously
+            // Proxy returns; others restore
             .to(proxy,  { x: 0,  y: 0,  scale: 1,   ease: 'power2.inOut', duration: 1 })
             .to(others, { opacity: 1,                ease: 'power2.inOut', duration: 1 }, '<')
-            // Swap back: restore original, hide proxy (same-time)
+            // Restore original + hide proxy (simultaneous)
             .set(card,  { opacity: 1 })
-            .set(proxy, { display: 'none' }, '<')
+            .set(proxy, { autoAlpha: 0 }, '<')
         })
       }
 
@@ -236,8 +241,7 @@ export function PlatformFeatures() {
         clearTimeout(resizeTimer)
         tl?.scrollTrigger?.kill()
         tl?.kill()
-        gsap.set(cards,   { clearProps: 'opacity' })
-        gsap.set(proxies, { clearProps: 'all', display: 'none' })
+        hideOverlay()
       }
     })
 
@@ -251,7 +255,7 @@ export function PlatformFeatures() {
         Proxy cards live here. They are OUTSIDE the section and the grid,
         so no parent can clip or stack-context-restrict them.
       */}
-      <div className="fixed inset-0 pointer-events-none z-[99999]">
+      <div ref={overlayRef} className="fixed inset-0 pointer-events-none z-[99999] invisible">
         {CARD_INDICES.map(i => (
           <div key={i} ref={setProxy(i)} className={`${PROXY_CARD} hidden`}>
             <CardInner idx={i} />
