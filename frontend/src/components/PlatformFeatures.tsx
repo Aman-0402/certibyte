@@ -199,13 +199,16 @@ export function PlatformFeatures() {
             start: 'top top',
             end: `+=${cards.length * 400}`,
             scrub: 0.8,
-            // Only make overlay visible while the section is actually pinned
             onEnter:     showOverlay,
             onLeave:     hideOverlay,
             onEnterBack: showOverlay,
             onLeaveBack: hideOverlay,
           },
         })
+
+        // Buffer: push ALL card animations off time=0 so GSAP's init render
+        // (which snaps to progress=0) never fires any .set() on cards/proxies.
+        tl!.to({}, { duration: 0.01 })
 
         cards.forEach((card, i) => {
           const proxy  = proxies[i]
