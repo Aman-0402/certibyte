@@ -191,8 +191,8 @@ export function PlatformFeatures() {
             start: 'top top',
             end: `+=${cards.length * 400}`,
             scrub: 0.8,
-            onLeaveBack: reset,
-            onLeave:     reset,
+            onLeave:     () => { tl?.progress(1, true); reset() },
+            onLeaveBack: () => { tl?.progress(0, true); reset() },
           },
         })
 
